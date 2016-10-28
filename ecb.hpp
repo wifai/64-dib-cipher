@@ -11,7 +11,7 @@ public:
     f = new Feistel(n, key1);
   }
   ~ECB() {
-    delete [] f;
+    delete f;
   }
   Block * encrypt(int n, Block * plain);
   Block * decrypt(int n, Block * cipher);

@@ -4,8 +4,11 @@
 #include "feistel.hpp"
 #include "ecb.hpp"
 #include "cbc.hpp"
+#include <cstdlib>
 
 using namespace std;
+
+#define BUFFER_SIZE 100005
 
 Block * toBlock(int n, char s[]) {
   int m = (n+7)/8;
@@ -32,7 +35,52 @@ char * toString(int n, Block * block) {
   return s;
 }
 
+Block buffer[BUFFER_SIZE];
+
+void readBlock(int &n, char * namefile) {
+  FILE * file = fopen(namefile, "r");
+  n = 0;
+  bool ok = true;
+  while (ok) {
+    Block cur = 0;
+    for (int i = 0; i < 8; i++) {
+      cur <<= 8;
+      int c;
+      if (ok) {
+        c = fgetc(file);
+        ok &= (c != EOF);
+        if (ok)
+          cur |= c; 
+      }
+    }
+    buffer[n++] = cur;
+  }
+  fclose(file);
+  if (n & 1)
+    buffer[n++] = 0;
+}
+void writeBlock(int n, Block * block, char * namefile) {
+  FILE * file = fopen(namefile, "w");
+  for (int i = 0; i < n; i++) {
+    Block cur = block[i];
+    for (int j = 0; j < 8; j++) {
+      int c = (cur >> ((7-j) * 8)) & 0xFF;
+      if (c != -1)
+        fputc(c, file);
+    }
+  }
+  fclose(file);
+}
+
 int main(int argc, char** argv) {
+  // Feistel feis(16, 2131239);
+  // Block2 result;
+  // result[0] = 12345;
+  // result[1] = 987;
+  // feis.encrypt(result);
+  // cerr << result[0] << " " << result[1] << endl;
+  // feis.decrypt(result);
+  // cerr << result[0] << " " << result[1] << endl;
   printf("**** Difusing Invers Block Cipher ****\n");
   printf("Option:\n");
   printf("(1) Encrypt\n");
@@ -44,9 +92,9 @@ int main(int argc, char** argv) {
     puts("Your choice is wrong :(");
     return 0;
   }
-  printf("Key in hex (8 byte / 64 bit): ");
+  printf("Key in integer 64 bit: ");
   Block key;
-  scanf("%U", &key);
+  scanf("%llu", &key);
   printf("Mode Option:\n");
   printf("(1) Electronic Code Book\n");
   printf("(2) Cipher Block Chaining\n");
@@ -58,18 +106,47 @@ int main(int argc, char** argv) {
     puts("Your choice is wrong :(");
     return 0;
   }
+  printf("File input : ");
+  char input[10000];
+  scanf("%s", input);
+  char output[100000];
+  printf("File output : ");
+  scanf("%s", output);
+  int n;
+  readBlock(n, input);
+  cerr << "reading success " << n << endl;
   switch (mode) {
     case 1: {
       ECB ecb(16, key);
+      Block * result = NULL;
 
-      break;
+      if (enOrDe == 1) {
+        result = ecb.encrypt(n, buffer);
+        puts("encrypting success");
+      }
+      else {
+        result = ecb.decrypt(n, buffer);
+        puts("decrypting success");
+      }
+      writeBlock(n, result, output);
     }
+    break;
     case 2: {
-      printf("case 2\n");
+      CBC cbc(16, key);
+      Block * result = NULL;
+      
+      if (enOrDe == 1) {
+        result = cbc.encrypt(n, buffer);
+        puts("encrypting success");
+      }
+      else {
+        result = cbc.decrypt(n, buffer);
+        puts("decrypting success");
+      }
+      writeBlock(n, result, output); 
       break;
     }
     case 3: {
-      printf("case 3\n");
 
       break;
     }

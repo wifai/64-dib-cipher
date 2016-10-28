@@ -16,7 +16,7 @@ public:
     iv[1] = iv[0] * prime_cbc;
   }
   ~CBC() {
-    delete [] f;
+    delete f;
   }
   Block * encrypt(int n, Block * plain);
   Block * decrypt(int n, Block * cipher);

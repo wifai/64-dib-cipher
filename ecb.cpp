@@ -1,4 +1,7 @@
 #include "ecb.hpp"
+#include <iostream>
+
+using namespace std;
 
 Block * ECB::encrypt(int n, Block * plain) {
   Block * cipher = new Block[n + 2];
@@ -9,6 +12,7 @@ Block * ECB::encrypt(int n, Block * plain) {
     f->encrypt(cur);
     cipher[i] = cur[0];
     cipher[i+1] = cur[1];
+    cerr << i << " " <<  cipher[i] << " " << cipher[i+1] << endl;
   }
   return cipher;
 }
@@ -21,6 +25,7 @@ Block * ECB::decrypt(int n, Block * cipher) {
     f->decrypt(cur);
     plain[i] = cur[0];
     plain[i+1] = cur[1];
+    cerr << i << " " <<cipher[i] << " " << cipher[i+1] << " | " <<  plain[i] << " " << plain[i+1] << endl;
   }
   return plain;
 }
